@@ -66,7 +66,13 @@
     BOOL _skipNextPagingScrollViewPositioning;
     BOOL _viewHasAppearedInitially;
     CGPoint _currentGridContentOffset;
-    
+
+    UIImageView *_sendOriginImageView;
+    UILabel *_sendOriginImageLable;
+
+    UIButton *_downloadOriginImageView;
+    UILabel *_downloadOriginImageLable;
+    UILabel *_downloadOriginImageFileSizeLable;
 }
 
 // Properties

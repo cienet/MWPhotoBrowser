@@ -216,7 +216,7 @@
     // Navigation buttons
     if ([self.navigationController.viewControllers objectAtIndex:0] == self) {
         // We're first on stack so show done button
-        _doneButton = [[UIBarButtonItem alloc] initWithTitle:NSLocalizedString(@"Done", nil) style:UIBarButtonItemStylePlain target:self action:@selector(doneButtonPressed:)];
+        _doneButton = [[UIBarButtonItem alloc] initWithTitle:NSLocalizedStringFromTable(@"GLOBAL_DONE", @"Localizable", nil) style:UIBarButtonItemStylePlain target:self action:@selector(doneButtonPressed:)];
         // Set appearance
         if ([UIBarButtonItem respondsToSelector:@selector(appearance)]) {
             [_doneButton setBackgroundImage:nil forState:UIControlStateNormal barMetrics:UIBarMetricsDefault];
@@ -253,13 +253,24 @@
     NSMutableArray *items = [[NSMutableArray alloc] init];
 
     // Left button - Grid
-    if (_enableGrid) {
+//    _enableGrid = YES;
+//    if (_enableGrid) {
+//        hasItems = YES;
+//        NSString *buttonName = @"UIBarButtonItemGrid";
+//        if (SYSTEM_VERSION_LESS_THAN(@"7")) buttonName = @"UIBarButtonItemGridiOS6";
+//        [items addObject:[[UIBarButtonItem alloc] initWithImage:[UIImage imageNamed:[NSString stringWithFormat:@"MWPhotoBrowser.bundle/images/%@.png", buttonName]] style:UIBarButtonItemStylePlain target:self action:@selector(showGridAnimated)]];
+//    } else {
+//        [items addObject:fixedSpace];
+//    }
+
+    if (_displaySendOriginButtons) {
         hasItems = YES;
-        NSString *buttonName = @"UIBarButtonItemGrid";
-        if (SYSTEM_VERSION_LESS_THAN(@"7")) buttonName = @"UIBarButtonItemGridiOS6";
-        [items addObject:[[UIBarButtonItem alloc] initWithImage:[UIImage imageNamed:[NSString stringWithFormat:@"MWPhotoBrowser.bundle/images/%@.png", buttonName]] style:UIBarButtonItemStylePlain target:self action:@selector(showGridAnimated)]];
-    } else {
-        [items addObject:fixedSpace];
+        [items addObject:[[UIBarButtonItem alloc] initWithCustomView:[self getOriginSendView]]];
+    }
+
+    if (_displayDownloadOriginImageButtons) {
+        hasItems = YES;
+        [items addObject:[[UIBarButtonItem alloc] initWithCustomView:[self getDownloadOriginImageView]]];
     }
 
     // Middle - Nav
@@ -307,6 +318,92 @@
     [self tilePages];
     _performingLayout = NO;
     
+}
+
+- (UIView *)getOriginSendView {
+    CGFloat hDistance = 5.0f;
+    UIView *sendOriginView = [[UIView alloc] initWithFrame:CGRectMake(hDistance, 0, 140.0f, _toolbar.frame.size.height)];
+    UITapGestureRecognizer *tapRecognizer = [[UITapGestureRecognizer alloc] initWithTarget:self action:@selector(sendOriginImageAction)];
+    [sendOriginView addGestureRecognizer:tapRecognizer];
+
+    sendOriginView.backgroundColor = [UIColor clearColor];
+
+    CGFloat imageWidth = 18.0f;
+    CGFloat imageHeight= 18.0f;
+    _sendOriginImageView = [[UIImageView alloc] initWithFrame:CGRectMake(0, (sendOriginView.frame.size.height-imageHeight)/2, imageWidth, imageHeight)];
+    [sendOriginView addSubview:_sendOriginImageView];
+    [_sendOriginImageView setContentMode:UIViewContentModeScaleAspectFit];
+    [_sendOriginImageView setImage:[UIImage imageNamed:@"btn_sel_default_no_mark"]];
+
+    _sendOriginImageLable = [[UILabel alloc] initWithFrame:CGRectMake(imageWidth+hDistance, 0, sendOriginView.frame.size.width-imageWidth-hDistance, sendOriginView.frame.size.height)];
+    [sendOriginView addSubview:_sendOriginImageLable];
+    [_sendOriginImageLable setTextColor:[UIColor whiteColor]];
+    [_sendOriginImageLable setFont:[UIFont systemFontOfSize:13.0f]];
+    [_sendOriginImageLable setText:NSLocalizedStringFromTable(@"GLOBAL_SEND_ORIGIN", @"Localizable", nil)];
+
+    [self updateSendOriginImageView];
+    return sendOriginView;
+}
+
+- (void)sendOriginImageAction {
+    if (_displaySendOriginButtons) {
+        _needSendOriginImage = !_needSendOriginImage;
+        [self updateSendOriginImageView];
+    }
+}
+
+- (void)updateSendOriginImageView {
+    [_sendOriginImageView setImage:[UIImage imageNamed:_needSendOriginImage ? @"btn_sel_select" : @"btn_sel_default_no_mark"]];
+    [_sendOriginImageLable setTextColor:_needSendOriginImage ? [UIColor whiteColor] : [UIColor darkGrayColor]];
+    if (_needSendOriginImage) {
+        if ([self.delegate respondsToSelector:@selector(photoBrowserSendOriginFileSize:)]) {
+            NSString *fileValue = [self.delegate photoBrowserSendOriginFileSize:self];
+            [_sendOriginImageLable setText:[NSString stringWithFormat:@"%@%@", NSLocalizedStringFromTable(@"GLOBAL_SEND_ORIGIN", @"Localizable", nil), fileValue]];
+        }
+    } else {
+        [_sendOriginImageLable setText:NSLocalizedStringFromTable(@"GLOBAL_SEND_ORIGIN", @"Localizable", nil)];
+    }
+}
+
+- (UIView *)getDownloadOriginImageView {
+    CGFloat hDistance = 5.0f;
+    _downloadOriginImageView = [[UIButton alloc] initWithFrame:CGRectMake(hDistance, 0, 140.0f, _toolbar.frame.size.height)];
+    _downloadOriginImageView.backgroundColor = [UIColor clearColor];
+    _downloadOriginImageView.showsTouchWhenHighlighted = YES;
+    [_downloadOriginImageView addTarget:self action:@selector(downloadOriginImageAction) forControlEvents:UIControlEventTouchUpInside];
+
+    _downloadOriginImageLable = [[UILabel alloc] initWithFrame:CGRectMake(0, 0, _downloadOriginImageView.frame.size.width, _downloadOriginImageView.frame.size.height/2)];
+    [_downloadOriginImageView addSubview:_downloadOriginImageLable];
+    [_downloadOriginImageLable setTextColor:[UIColor whiteColor]];
+    [_downloadOriginImageLable setFont:[UIFont systemFontOfSize:13.0f]];
+    [_downloadOriginImageLable setText:NSLocalizedStringFromTable(@"GLOBAL_DOWNLOAD_ORIGIN", @"Localizable", nil)];
+
+    _downloadOriginImageFileSizeLable = [[UILabel alloc] initWithFrame:CGRectMake(0, _downloadOriginImageView.frame.size.height/2, _downloadOriginImageView.frame.size.width, _downloadOriginImageView.frame.size.height/2)];
+    [_downloadOriginImageView addSubview:_downloadOriginImageFileSizeLable];
+    [_downloadOriginImageFileSizeLable setTextColor:[UIColor darkGrayColor]];
+    [_downloadOriginImageFileSizeLable setFont:[UIFont systemFontOfSize:11.0f]];
+    [_downloadOriginImageFileSizeLable setText:NSLocalizedStringFromTable(@"GLOBAL_SEND_ORIGIN", @"Localizable", nil)];
+
+    return _downloadOriginImageView;
+}
+
+- (void)downloadOriginImageAction {
+    MWPhoto *photo = [self photoAtIndex:_currentPageIndex];
+    if (photo) {
+        if ([_delegate respondsToSelector:@selector(photoBrowserDownloadOriginImageURL:photoAtIndex:)]) {
+            [_delegate photoBrowserDownloadOriginImageURL:self photoAtIndex:_currentPageIndex];
+        }
+    }
+}
+
+- (void)updateDownloadOriginImageView {
+    if ([_delegate respondsToSelector:@selector(photoBrowserNeedShowDownloadOriginImage:photoAtIndex:)]) {
+        _downloadOriginImageView.hidden = ![_delegate photoBrowserNeedShowDownloadOriginImage:self photoAtIndex:_currentPageIndex];
+        _downloadOriginImageFileSizeLable.text = [NSString stringWithFormat:@"%@%@", NSLocalizedStringFromTable(@"GLOBAL_DOWNLOAD_ORIGIN_SIZE", @"Localizable", nil),
+                                                  [_delegate photoBrowserDownloadOriginImageFile:self photoAtIndex:_currentPageIndex]];
+    } else {
+        _downloadOriginImageView.hidden = YES;
+    }
 }
 
 // Release any retained subviews of the main view.
@@ -716,6 +813,7 @@
             [self.delegate photoBrowser:self photoAtIndex:index selectedChanged:selected];
         }
     }
+    [self updateSendOriginImageView];
 }
 
 - (UIImage *)imageForPhoto:(id<MWPhoto>)photo {
@@ -772,6 +870,7 @@
         }
         // Update nav
         [self updateNavigation];
+        [self updateDownloadOriginImageView];
     }
 }
 
@@ -843,7 +942,16 @@
                 page.selectedButton = selectedButton;
                 selectedButton.selected = [self photoIsSelectedAtIndex:index];
             }
-            
+
+            if (self.displayDownloadOriginImageButtons) {
+                if ([_delegate respondsToSelector:@selector(photoBrowserNeedShowDownloadOriginImage:photoAtIndex:)]) {
+                    _downloadOriginImageView.hidden = ![_delegate photoBrowserNeedShowDownloadOriginImage:self photoAtIndex:index];
+                    _downloadOriginImageFileSizeLable.text = [NSString stringWithFormat:@"%@%@", NSLocalizedStringFromTable(@"GLOBAL_DOWNLOAD_ORIGIN_SIZE", @"Localizable", nil),
+                                                         [_delegate photoBrowserDownloadOriginImageFile:self photoAtIndex:index]];
+                } else {
+                    _downloadOriginImageView.hidden = YES;
+                }
+            }
 		}
 	}
 	
@@ -1010,7 +1118,7 @@
         UINavigationBar *navBar = self.navigationController.navigationBar;
         yOffset = navBar.frame.origin.y + navBar.frame.size.height;
     }
-    CGFloat statusBarOffset = [[UIApplication sharedApplication] statusBarFrame].size.height;
+    CGFloat statusBarOffset = 20.0f;
 #if __IPHONE_OS_VERSION_MIN_REQUIRED < __IPHONE_7_0
     if (SYSTEM_VERSION_LESS_THAN(@"7") && !self.wantsFullScreenLayout) statusBarOffset = 0;
 #endif
@@ -1145,7 +1253,7 @@
 
     if (_gridController) return;
     
-    // Init grid controller
+    // Init grid controller 
     _gridController = [[MWGridViewController alloc] init];
     _gridController.initialContentOffset = _currentGridContentOffset;
     _gridController.browser = self;

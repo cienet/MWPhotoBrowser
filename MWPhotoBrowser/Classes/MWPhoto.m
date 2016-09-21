@@ -116,10 +116,12 @@
                         [assetslibrary assetForURL:_photoURL
                                        resultBlock:^(ALAsset *asset){
                                            ALAssetRepresentation *rep = [asset defaultRepresentation];
+//                                           CGImageRef iref = CGImageCreateCopy([rep fullScreenImage]);
                                            CGImageRef iref = [rep fullScreenImage];
                                            if (iref) {
                                                self.underlyingImage = [UIImage imageWithCGImage:iref];
                                            }
+//                                           CGImageRelease(iref);
                                            [self performSelectorOnMainThread:@selector(imageLoadingComplete) withObject:nil waitUntilDone:NO];
                                        }
                                       failureBlock:^(NSError *error) {

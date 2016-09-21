@@ -52,7 +52,7 @@ static const CGFloat labelPadding = 10;
 
 - (CGSize)sizeThatFits:(CGSize)size {
     CGFloat maxHeight = 9999;
-    if (_label.numberOfLines > 0) maxHeight = _label.font.leading*_label.numberOfLines;
+    if (_label.numberOfLines > 0) maxHeight = _label.font.lineHeight*_label.numberOfLines;
     CGSize textSize;
     if ([NSString instancesRespondToSelector:@selector(boundingRectWithSize:options:attributes:context:)]) {
         textSize = [_label.text boundingRectWithSize:CGSizeMake(size.width - labelPadding*2, maxHeight)

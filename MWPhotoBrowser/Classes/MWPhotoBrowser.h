@@ -36,7 +36,10 @@
 - (BOOL)photoBrowser:(MWPhotoBrowser *)photoBrowser isPhotoSelectedAtIndex:(NSUInteger)index;
 - (void)photoBrowser:(MWPhotoBrowser *)photoBrowser photoAtIndex:(NSUInteger)index selectedChanged:(BOOL)selected;
 - (void)photoBrowserDidFinishModalPresentation:(MWPhotoBrowser *)photoBrowser;
-
+- (NSString *)photoBrowserSendOriginFileSize:(MWPhotoBrowser *)photoBrowser;
+- (BOOL)photoBrowserNeedShowDownloadOriginImage:(MWPhotoBrowser *)photoBrowser photoAtIndex:(NSUInteger)index;
+- (NSString *)photoBrowserDownloadOriginImageFile:(MWPhotoBrowser *)photoBrowser photoAtIndex:(NSUInteger)index;
+- (void)photoBrowserDownloadOriginImageURL:(MWPhotoBrowser *)photoBrowser photoAtIndex:(NSUInteger)index;
 @end
 
 @interface MWPhotoBrowser : UIViewController <UIScrollViewDelegate, UIActionSheetDelegate, MFMailComposeViewControllerDelegate>
@@ -46,6 +49,9 @@
 @property (nonatomic) BOOL displayNavArrows;
 @property (nonatomic) BOOL displayActionButton;
 @property (nonatomic) BOOL displaySelectionButtons;
+@property (nonatomic) BOOL displaySendOriginButtons;
+@property (nonatomic) BOOL needSendOriginImage;
+@property (nonatomic) BOOL displayDownloadOriginImageButtons;
 @property (nonatomic) BOOL alwaysShowControls;
 @property (nonatomic) BOOL enableGrid;
 @property (nonatomic) BOOL enableSwipeToDismiss;
